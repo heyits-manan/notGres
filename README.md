@@ -1,6 +1,6 @@
 # notGres
 
-*a database server that's definitely not Postgres™ (wink)*
+*a database server that's definitely not Postgres*
 
 notGres is a from-scratch, learning-first database server written in Go. It speaks (or will speak) the PostgreSQL wire protocol, because why design your own protocol when the world already has a perfectly good one? The end goal is a SQL database you can connect to with `psql` and actually run queries on. Emphasis on "end goal" — we're not there yet, pal.
 
