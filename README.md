@@ -12,16 +12,17 @@ The architecture is *heavily inspired* by Postgres because, well, it's the gold 
 
 ## Current features
 
-- **Starts.** Like, actually compiles and runs.
-- **Listens on a TCP port** (default `5432`, because we're cosplaying Postgres).
-- **Accepts connections.** Logs them. Then immediately closes them. We're not great at commitment yet.
+- **Postgres wire protocol startup handshake.** `psql` can connect and see a prompt. We speak the language now.
+- **TCP listener** on port `5432` (because we're cosplaying Postgres).
+- **Binary protocol primitives** — manual `ReadInt32`/`WriteInt32`/`ReadString`/`WriteString`. No libraries. Raw bytes over the wire.
 - **Graceful shutdown.** Hit Ctrl+C and it cleans up like a responsible adult.
 - **Signal handling.** SIGTERM, SIGINT — we respect them all.
 - **A Makefile** that does `build`, `run`, `test`, and `vet`. Fancy.
+- **Zero dependencies.** Pure stdlib. No `pgx`, no `pq`, no nothing.
 
-## Future features
+## What's next (the roadmap)
 
-- **Postgres wire protocol** — so you can actually `psql` in and feel something
+- **Query loop** — read SQL text from the client, send back a hardcoded result (hello `SELECT 1;`)
 - **SQL parser** — lexer, tokenizer, AST. The fun recursive descent stuff
 - **Query planner & executor** — turning parsed queries into actual work
 - **Storage engine** — pages, heap files, a buffer pool. On-disk persistence!
@@ -44,9 +45,11 @@ cd notGres
 # run
 make run
 
-# in another terminal
-nc localhost 5432
-# "connection from [::1]:12345" — it works!
+# in another terminal — psql can now connect successfully!
+psql -h localhost -p 5432
+# psql (14.0)
+# Type "help" for help.
+# (no database)=#
 
 # build
 make build
@@ -61,7 +64,8 @@ make test
 notGres/
 ├── main.go              # entrypoint: flags, listener, signal handling
 ├── internal/
-│   ├── server/          # TCP server, connection handling (the only working thing rn)
+│   ├── protocol/        # Postgres wire protocol: read/write primitives, startup handshake
+│   ├── server/          # TCP server, connection handling
 │   ├── sql/             # future: lexer, parser, AST
 │   ├── executor/        # future: query execution engine
 │   ├── storage/         # future: heap files, pages, buffer pool
