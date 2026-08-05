@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"sync"
+
+	"github.com/heyits-manan/notGres/internal/protocol"
 )
 
 type Config struct {
@@ -47,6 +49,13 @@ func (s *Server) Serve(ln net.Listener, ready chan<- struct{}) {
 func (s *Server) handleConn(conn net.Conn) {
 	defer conn.Close()
 	log.Printf("connection from %s", conn.RemoteAddr())
+
+	if err := protocol.HandleStartup(conn); err != nil {
+		log.Printf("startup failed from %s: %v", conn.RemoteAddr(), err)
+		return
+	}
+
+	// TODO: query loop coming up
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
