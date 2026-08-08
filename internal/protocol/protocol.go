@@ -53,6 +53,7 @@ const (
 	MsgParamStatus   byte = 'S'
 	MsgReadyForQuery byte = 'Z'
 	MsgQuery         byte = 'Q'
+	MsgEmptyQuery    byte = 'I'
 	MsgTerminate     byte = 'X'
 	MsgRowDesc       byte = 'T'
 	MsgDataRow       byte = 'D'
