@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -55,7 +56,20 @@ func (s *Server) handleConn(conn net.Conn) {
 		return
 	}
 
-	// TODO: query loop coming up
+	for {
+		cont, err := protocol.HandleMessage(conn)
+		if err != nil {
+			if err == io.EOF {
+				log.Printf("client %s disconnected", conn.RemoteAddr())
+				return
+			}
+			log.Printf("message error from %s: %v", conn.RemoteAddr(), err)
+			return
+		}
+		if !cont {
+			return
+		}
+	}
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {

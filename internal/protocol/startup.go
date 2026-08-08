@@ -80,3 +80,43 @@ func sendParamStatus(conn net.Conn, key, value string) {
 	WriteString(conn, key)
 	WriteString(conn, value)
 }
+
+func HandleMessage(conn net.Conn) (bool, error){
+	typ := make([]byte, 1)
+	_, err := conn.Read(typ)
+	if err != nil {
+		return false, fmt.Errorf("read message type: %w", err)
+	}
+
+	switch typ[0] {
+	case MsgTerminate:
+		_, _ = ReadInt32(conn)
+		return false, nil
+	case MsgQuery:
+		_, err := ReadInt32(conn)
+		if err != nil {
+			return false, fmt.Errorf("read query length: %w", err)
+		}
+		query, err := ReadString(conn)
+		if err != nil {
+			return false, fmt.Errorf("read query string: %w", err)
+		}
+		log.Printf("query: %s", query)
+		if query == "" {
+			conn.Write([]byte{MsgEmptyQuery})
+			WriteInt32(conn, 4)
+		} else {
+			tag := "SELECT 0"
+			conn.Write([]byte{MsgCmdComplete})
+			WriteInt32(conn, uint32(4+len(tag)+1))
+			WriteString(conn, tag)
+		}
+
+		conn.Write([]byte{MsgReadyForQuery})
+		WriteInt32(conn, 5)
+		conn.Write([]byte{'I'})
+		return true, nil
+	default:
+		return false, fmt.Errorf("unknown message type '%c'", typ[0])
+	}
+}
